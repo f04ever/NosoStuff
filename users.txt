@@ -1,0 +1,6 @@
+# List of mining users (wallet address/ alias).
+# The 1st user in list has higher priority then the 2nd one, and so on the next
+# users. The user fallback mechanism follow this order.
+#
+# LINE-FORMATION (#-prefix lines being ignored): one user per line
+#

@@ -1,0 +1,11 @@
+# List of mining pools.
+# The 1st pool in list has higher priority than the 2nd one, and so on the next
+# pools. The pool fallback mechanism follows this order.
+#
+# LINE-FORMATION (#-prefix lines being ignored):
+#
+# NAME HOST/IP PORT PASSWORD
+#
+#MyOwnPool  <MY_POOL_IP>            8082    <MY_POOL_PASS>
+devnoso     devnosoeu.nosocoin.com  8082    UnMaTcHeD
+leviable    pool.noso.dev           8082    password
