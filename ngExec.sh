@@ -311,7 +311,7 @@ while true; do
         "$(date +'%Y/%m/%d %H:%M:%S')" \
         "$miner_exit_code" \
         | tee -a $ngstuff_logfile
-    if [ $miner_exit_code -eq 124 ] && [ $mining_duration -gt 0 ]; then
+    if [ $mining_duration -gt 0 ]; then
         poolName="${prefPool[0]}"
         poolHost="${prefPool[1]}"
         poolPort="${prefPool[2]}"
