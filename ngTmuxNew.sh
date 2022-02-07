@@ -26,6 +26,6 @@ tmux send-keys -t $nososess:0.1 "cd $nosopath" C-m
 tmux send-keys -t $nososess:0.2 "cd $nosopath" C-m
 tmux send-keys -t $nososess:0.0 './ngExec.sh' C-m
 tmux send-keys -t $nososess:0.1 './ngKill.sh' C-m
-tmux send-keys -t $nososess:0.2 'sleep 10s; while [ ! -f pooling.log ]; do sleep 10; done; tail -f pooling.log' C-m
+tmux send-keys -t $nososess:0.2 'tail -F pooling.log' C-m
 echo 'New ngTmux DONE!'
 [ "$1" = "a" ] && tmux a -t $nososess
