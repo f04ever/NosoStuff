@@ -13,7 +13,7 @@ I need tools to:
     - Automatically stop the mining in case of dead events appear.
     - Automatically restart mining or switch to another pool and/or wallet address to continue the mining.
 
-And, here they are! `ngExec.sh`, `ngKill.sh`, `ngTmuxNew.sh`, `ngTmuxEnd.sh` (`bash` shell scripts)
+And, here they are! `ngExec.sh`, `ngKill.sh`, `ngTmuxNew.sh`, `ngTmuxEnd.sh`, and `ngTmuxRestart.sh` (`bash` shell scripts)
 
 ![Screenshot](images/ngTools.png)
 
@@ -22,10 +22,10 @@ Linux, Android(Termux), and macOS. Currently not support Windows native someone 
 
 ### Required packages: `tmux`, `nc` (`netcat`), `timeout`, `sed`, `grep`, `pgrep`, ...
 
-*** In Linux: Most of these packages are common and installed by default in linux distros
+*** In Linux: Most of these packages are common and installed by default in linux distros:
     - `sudo apt install tmux`
 
-*** In macOS: the `nc` Apple version is bugful, use the GNU version instead
+*** In macOS: the `nc` Apple version is bugfull, use the GNU version instead:
     - `brew install tmux netcat grep gnu-sed`
 
 *** In Android/Termux:
@@ -38,11 +38,13 @@ Linux, Android(Termux), and macOS. Currently not support Windows native someone 
 - Set executable permission to script files:
     `chmod +x ngTmuxNew.sh`
     `chmod +x ngTmuxEnd.sh`
+    `chmod +x ngTmuxRestart.sh`
     `chmod +x ngExec.sh`
     `chmod +x ngKill.sh`
 - Run appropriate commands bellow from shell prompt ($, #, ...):
-    `./ngTmuxNew.sh`    # for launching the mining processes
-    `./ngTmuxEnd.sh`    # for turning off the mining processes
+    `./ngTmuxNew.sh`        # for launching the mining processes
+    `./ngTmuxEnd.sh`        # for turning off the mining processes
+    `./ngTmuxRestart.sh`    # simplifying the turning of and lauhching again mining processes
 - To view the `tmux` session (with mining processes run in) by command:
     `tmux a -tnosomine`
 - To close the above `tmux` screen (and let mining processes run) by keystrokes:
@@ -70,6 +72,8 @@ Linux, Android(Termux), and macOS. Currently not support Windows native someone 
 
 - The `ngTmuxNew.sh` and `ngTmuxEnd.sh` utilize for launching and turning off both `ngExec.sh` and `ngKill.sh` at once on a single `tmux` session.
 
+- The `ngTmuxRestart.sh` is just a simplifying of turning of the current mining and then launching it again.
+
 ### Supported events
 Currently it can catch these simple events:
 - `Watchdog triggered` --> restart miner;
@@ -77,5 +81,5 @@ Currently it can catch these simple events:
 - `BANNED` --> try another pool;
 - `ALREADYCONNECTED` --> try another wallet address, if no more address available, try another pool;
 - `PING 0` --> restart miner;
-- pool offline (`i/o timeout` for more than a minute) --> try another pool;
+- Pool offline (`i/o timeout` for more than a minute) --> try another pool;
 
