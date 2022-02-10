@@ -1,6 +1,11 @@
 #!/bin/bash
 
-CPU=1
+CPU=                    # CPUs count using for mining
+                        # this parameter can be overwrite by a equivalent in file params.txt
+                        #
+SWITCH_DURATION=        # duration (sec) for mining in non-preferred pools,
+                        # zero means no non-preferred mining
+                        # this parameter can be overwrite by a equivalent in file params.txt
 
 POOLS=$(cat << EOF
 # List of mining pools. This list can be combined with pools.txt
@@ -10,8 +15,8 @@ POOLS=$(cat << EOF
 # LINE-FORMATION (#-prefix lines being ignored):
 # NAME HOST/IP PORT PASSWORD
 #
+#localhost  127.0.0.1               8082    a_password
 #MyOwnPool  <MY_POOL_IP>            8082    <MY_POOL_PASS>
-#localhost  127.0.0.1               8082    password
 EOF
 )
 
@@ -25,14 +30,87 @@ USERS=$(cat << EOF
 EOF
 )
 
-SWITCH_DURATION="$(expr 60 \* 30)"  # mining duration (sec) for pools not preferred
+#------------------------------------------------------------------------------#
+
+log_lines_count=60                  # number of latest log lines be used in detecting
+events_duration=60                  # duration that events might occur
+probing_duration=30                 # timeout duration (sec) for probing pool alive
+noso_go_logfile=noso-go.log
+ngstuff_logfile=pooling.log
 
 #------------------------------------------------------------------------------#
 
-noso_go_logfile=noso-go.log
-ngstuff_logfile=pooling.log
-log_lines_count=60
-events_duration=60 # sec 
+[ -f pools.txt ] && POOLS=$(printf "%s\n%s" "$(cat pools.txt)" "$POOLS")
+POOLS=$(echo "$POOLS" \
+    | grep -E -v "^$|^#"    \
+    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
+    | awk '!seen[$0]++')
+    # remove empty/ commented lines; trim the leading spaces (1), the trailing
+    # spaces (2) and replace a group of spaces with a single space; remove
+    # duplicated lines preserved order
+
+[ -f users.txt ] && USERS=$(printf "%s\n%s" "$(cat users.txt)" "$USERS")
+USERS=$(echo "$USERS" \
+    | grep -E -v "^$|^#"    \
+    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
+    | awk '!seen[$0]++')
+    # remove empty/ commented lines; trim the leading spaces (1), the trailing
+    # spaces (2) and replace a group of spaces with a single space; remove
+    # duplicated lines preserved order
+
+[ -f params.txt ] && params="$(cat params.txt)"
+params=$(echo "$params" \
+    | sed 's/#.*$//g' \
+    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
+    | grep -E -v '^$' \
+    | awk '!seen[$0]++')
+    # remove commented part of lines (from # charater to the end of line);
+    # trim leading spaces (1), trim trailing spaces (2), and replace a group of
+    # spaces with a single space (3);
+    # remove empty lines;
+    # remove duplicated lines preserved order;
+
+reNUM='^[0-9]+$'
+
+aCPU=$(echo "$params" | grep -E '^CPU' | tail -1 | sed -n -e 's/^CPU *= *//p')
+if [[ "$aCPU" =~ $reNUM ]] ; then
+   CPU=$aCPU
+fi
+aSWITCH_DURATION=$(echo "$params" | grep -E '^SWITCH_DURATION' | tail -1 | sed -n -e 's/^SWITCH_DURATION *= *//p')
+if [[ "$aSWITCH_DURATION" =~ $reNUM ]] ; then
+   SWITCH_DURATION=$aSWITCH_DURATION
+fi
+
+#------------------------------------------------------------------------------#
+
+if [ -z "$CPU" ]; then
+    printf "[%s]The variable 'CPU' is required to be set!\n" \
+        "$(date +'%Y/%m/%d %H:%M:%S')" \
+        | tee -a $ngstuff_logfile
+    exit 0
+fi
+
+if [ -z "$SWITCH_DURATION" ]; then
+    printf "[%s]The variable 'SWITCH_DURATION' is required to be set!\n" \
+        "$(date +'%Y/%m/%d %H:%M:%S')" \
+        | tee -a $ngstuff_logfile
+    exit 0
+fi
+
+if [ -z "$POOLS" ]; then
+    printf "[%s]No pool provided\n" \
+        "$(date +'%Y/%m/%d %H:%M:%S')" \
+        | tee -a $ngstuff_logfile
+    exit 0
+fi
+
+if [ -z "$USERS" ]; then
+    printf "[%s]No wallet provided\n" \
+        "$(date +'%Y/%m/%d %H:%M:%S')" \
+        | tee -a $ngstuff_logfile
+    exit 0
+fi
+#------------------------------------------------------------------------------#
 
 function timediff_in_second() {
     local elapsed_secs=
@@ -88,7 +166,6 @@ function detect_event_occurrence() {
 select_pool_user_selected=
 function select_pool_user_by_pool_statistics() {
     select_pool_user_selected=
-    local probing_duration=30 # timeout duration (sec) for probing pool alive
     local pool_name=$1
     local pool_host=$2
     local pool_port=$3
@@ -138,7 +215,6 @@ function select_pool_user_by_pool_statistics() {
 }
 function select_pool_user_by_probing_pool() {
     select_pool_user_selected=
-    local probing_duration=30 # timeout duration (sec) for probing pool alive
     local pool_name=$1
     local pool_host=$2
     local pool_port=$3
@@ -187,76 +263,46 @@ function select_pool_user() {
 
 [ -f "$ngstuff_logfile" ] && mv $ngstuff_logfile ${ngstuff_logfile}-last
 
-if [ -z "$CPU" ]; then
-    printf "[%s]The variable 'CPU' is required to be set!\n" \
-        "$(date +'%Y/%m/%d %H:%M:%S')" \
-        | tee -a $ngstuff_logfile
-    exit 0
-fi
 printf "[%s]==================================MINING POOLS==================================\n" \
     "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
-[ -f pools.txt ] && POOLS=$(printf "%s\n%s" "$(cat pools.txt)" "$POOLS")
-POOLS=$(echo "$POOLS" \
-    | grep -E -v "^$|^#"    \
-    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
-    | awk '!seen[$0]++')
-    # remove empty/ commented lines; trim the leading spaces (1), the trailing
-    # spaces (2) and replace a group of spaces with a single space; remove
-    # duplicated lines preserved order
-if [ -z "$POOLS" ]; then
-    printf "[%s]No pool provided\n" \
+count=0
+while read -r line; do
+    count=$(expr $count + 1)
+    printf "[%s] %d - %s\n" \
         "$(date +'%Y/%m/%d %H:%M:%S')" \
+        $count "$line" \
         | tee -a $ngstuff_logfile
-    exit 0
-else
-    count=0
-    while read -r line; do
-        count=$(expr $count + 1)
-        printf "[%s] %d - %s\n" \
+    line=($line)
+    if [ ${#line[@]} -lt 4 ]; then
+        printf "[%s] %d - INVALID POOL CONFIG\n" \
             "$(date +'%Y/%m/%d %H:%M:%S')" \
-            $count "$line" \
+            $count \
             | tee -a $ngstuff_logfile
-        line=($line)
-        if [ ${#line[@]} -lt 4 ]; then
-            printf "[%s] %d - INVALID POOL CONFIG\n" \
-                "$(date +'%Y/%m/%d %H:%M:%S')" \
-                $count \
-                | tee -a $ngstuff_logfile
-            exit 0
-        fi
-    done <<< "$POOLS"
-fi
+        exit 0
+    fi
+done <<< "$POOLS"
 
-printf "[%s]=================================WALLET ADDRESS=================================\n" \
+printf "[%s]---------------------------------WALLET ADDRESS---------------------------------\n" \
     "$(date +'%Y/%m/%d %H:%M:%S')" \
     | tee -a $ngstuff_logfile
-[ -f users.txt ] && USERS=$(printf "%s\n%s" "$(cat users.txt)" "$USERS")
-USERS=$(echo "$USERS" \
-    | grep -E -v "^$|^#"    \
-    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
-    | awk '!seen[$0]++')
-    # remove empty/ commented lines; trim the leading spaces (1), the trailing
-    # spaces (2) and replace a group of spaces with a single space; remove
-    # duplicated lines preserved order
-if [ -z "$USERS" ]; then
-    printf "[%s]No wallet provided\n" \
-        "$(date +'%Y/%m/%d %H:%M:%S')" \
-        | tee -a $ngstuff_logfile
-    exit 0
-else
     count=0
-    while read -r line; do
-        count=$(expr $count + 1)
-        printf "[%s] %d - %s\n" \
-            "$(date +'%Y/%m/%d %H:%M:%S')" \
-            $count "$line" \
-            | tee -a $ngstuff_logfile
-    done <<< "$USERS"
-fi
-USERS=($USERS)
+while read -r line; do
+    count=$(expr $count + 1)
+    printf "[%s] %d - %s\n" \
+        "$(date +'%Y/%m/%d %H:%M:%S')" \
+        $count "$line" \
+        | tee -a $ngstuff_logfile
+done <<< "$USERS"
+printf "[%s]-----------------------------------PARAMETERS-----------------------------------\n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]                                                                                \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- CPU=$CPU                                                                      \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- SWITCH_DURATION=$SWITCH_DURATION (seconds)                                    \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]                                                                                \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]================================================================================\n" \
     "$(date +'%Y/%m/%d %H:%M:%S')" \
     | tee -a $ngstuff_logfile
+
+USERS=($USERS)
 
 prefPool=($(echo "$POOLS" | head -n 1))
 prefUser="${USERS[0]}"
@@ -390,7 +436,7 @@ while true; do
             poolPort="${prefPool[2]}"
             poolPass="${prefPool[3]}"
             poolUser="$prefUser"
-            printf "[%s]User %s will attemp mining on pool %s next minute\n" \
+            printf "[%s]User %s will attempt mining on pool %s next minute\n" \
                 "$(date +'%Y/%m/%d %H:%M:%S')" \
                 $poolUser \
                 $poolName \

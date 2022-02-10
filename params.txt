@@ -1,0 +1,12 @@
+#----------------------------ngExec.sh's Parameters----------------------------#
+
+CPU=1                   # Number of CPUs noso-go uses for mining
+
+SWITCH_DURATION=0       # duration (sec) for mining in non-preferred pools,
+                        # zero means no non-preferred mining, no timeout mining
+                        # default 0
+
+#----------------------------ngKill.sh's Parameters----------------------------#
+
+TIME_CYCLE=5            # periodic duration (sec) scan the noso-go log file
+                        # default 05 seconds

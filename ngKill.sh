@@ -1,6 +1,7 @@
 #!/bin/bash
 
-TIME_CYCLE=5 # periodic (5sec) scan the noso-go log file
+TIME_CYCLE=             # periodic duration (sec) scan the noso-go log file
+                        # this parameter can be overwrite by a equivalent in file params.txt
 
 #------------------------------------------------------------------------------#
 
@@ -8,6 +9,37 @@ noso_go_logfile=noso-go.log
 ngstuff_logfile=killing.log
 log_lines_count=60  # number of latest log lines
 events_duration=60  # duration (sec) the events occur
+
+#------------------------------------------------------------------------------#
+
+[ -f params.txt ] && params="$(cat params.txt)"
+params=$(echo "$params" \
+    | sed 's/#.*$//g' \
+    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
+    | grep -E -v '^$' \
+    | awk '!seen[$0]++')
+    # remove commented part of lines (from # charater to the end of line);
+    # trim leading spaces (1), trim trailing spaces (2), and replace a group of
+    # spaces with a single space (3);
+    # remove empty lines;
+    # remove duplicated lines preserved order;
+
+reNUM='^[0-9]+$'
+
+aTIME_CYCLE=$(echo "$params" | grep -E '^TIME_CYCLE' | tail -1 | sed -n -e 's/^TIME_CYCLE *= *//p')
+if [[ "$aTIME_CYCLE" =~ $reNUM ]] ; then
+   TIME_CYCLE=$aTIME_CYCLE
+fi
+
+#------------------------------------------------------------------------------#
+
+if [ -z "$TIME_CYCLE" ]; then
+    printf "[%s]The variable 'TIME_CYCLE' is required to be set!\n" \
+        "$(date +'%Y/%m/%d %H:%M:%S')" \
+        | tee -a $ngstuff_logfile
+    exit 0
+fi
+#------------------------------------------------------------------------------#
 
 function timediff_in_second() {
     local elapsed_secs=
@@ -91,6 +123,10 @@ printf "[%s]- 'ALREADYCONNECTED'                                                
 printf "[%s]- 'PING 0'                                                                      \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]- 'Watchdog Triggered'                                                          \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]- 'i/o timeout'                                                                 \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]-----------------------------------PARAMETERS-----------------------------------\n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]                                                                                \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- TIME_CYCLE=$TIME_CYCLE (seconds)                                              \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]                                                                                \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]================================================================================\n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 
 last_detecting_time="2021/01/01 00:00:01"

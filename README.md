@@ -23,12 +23,15 @@ Linux, Android(Termux), and macOS. Currently not support Windows native someone 
 ### Required packages: `tmux`, `nc` (`netcat`), `timeout`, `sed`, `grep`, `pgrep`, ...
 
 *** In Linux: Most of these packages are common and installed by default in linux distros:
+
     - `sudo apt install tmux`
 
 *** In macOS: the `nc` Apple version is bugfull, use the GNU version instead:
+
     - `brew install tmux netcat grep gnu-sed`
 
 *** In Android/Termux:
+
     - `pkg install termux netcat-openbsd`
 
 ### Quick runing
