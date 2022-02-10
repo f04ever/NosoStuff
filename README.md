@@ -1,5 +1,5 @@
 # NosoStuff
-Some handy scripts facilitate [Noso Cryptocurrency](https://nosocoin.com) mining, masternode running, ...
+Some handy scripts facilitate [Noso Cryptocurrency](https://nosocoin.com) mining, masternode running, checking pools information ...
 
 ## FOR MINING USING `noso-go`
 
@@ -86,3 +86,13 @@ Currently it can catch these simple events:
 - `PING 0` --> restart miner;
 - Pool offline (`i/o timeout` for more than a minute) --> try another pool;
 
+
+## FOR CHECKING POOLS INFORMATION
+
+- Check pools online or not, show pool information including: hashrate, number of miners, fee, share, ... If associating with users (users.txt), show status of user in pool, including: joining or not, balance, user hash rate, block till payment out.
+
+- Setup: `chmod +x problePools.sh`
+
+- Parameters: `pools.txt` and `users.txt` (optional but recommended)
+
+- Use command: `./probePools.sh`
