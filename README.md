@@ -45,13 +45,13 @@ Linux, Android(Termux), and macOS. Currently not support Windows native someone 
     `chmod +x ngExec.sh`
     `chmod +x ngKill.sh`
 - Run appropriate commands bellow from shell prompt ($, #, ...):
-    `./ngTmuxNew.sh`        # for launching the mining processes
+    `./ngTmuxNew.sh`        # for launching mining processes, shows up a 3-window screen (a `tmux` screen) of mining processes
     `./ngTmuxEnd.sh`        # for turning off the mining processes
     `./ngTmuxRestart.sh`    # simplifying the turning of and lauhching again mining processes
-- To view the `tmux` session (with mining processes run in) by command:
-    `tmux a -tnosomine`
-- To close the above `tmux` screen (and let mining processes run) by keystrokes:
+- To close the above 3-window screen and let mining processes continue to run in background by keystrokes:
     `Ctr-b d`
+- To show up the 3-window screen with mining processes running by command:
+    `tmux a -tnosomine`
 
 ### Set parameters:
 - `POOLS`: List of pools can be used (in file `pools.txt` or `ngExec.sh`)
