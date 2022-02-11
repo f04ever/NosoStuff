@@ -29,22 +29,24 @@ probing_duration=30                 # timeout duration (sec) for probing pool al
 
 [ -f pools.txt ] && POOLS=$(printf "%s\n%s" "$(cat pools.txt)" "$POOLS")
 POOLS=$(echo "$POOLS" \
-    | grep -E -v "^$|^#"    \
-    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
+    | sed 's/#.*$//g;s/\t/ /g;s/^ *//;s/ *$//;s/  */ /g;/^$/d;' \
     | awk '!seen[$0]++')
-    # remove empty/ commented lines; trim the leading spaces (1), the trailing
-    # spaces (2) and replace a group of spaces with a single space; remove
-    # duplicated lines preserved order
+    # 1/remove commented part from # charater to the end of line (1), replace a
+    # tab character by a space (2), trim line's leading spaces (3), trim line's
+    # trailing spaces (4), replace a group of spaces with a single space (5),
+    # remove empty lines (6);
+    # 2/remove duplicated lines preserved order;
 [ ${#POOLS[@]} -eq 0 ] && printf "no pool provided\n" && exit 0
 
 [ -f users.txt ] && USERS=$(printf "%s\n%s" "$(cat users.txt)" "$USERS")
 USERS=$(echo "$USERS" \
-    | grep -E -v "^$|^#"    \
-    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
+    | sed 's/#.*$//g;s/\t/ /g;s/^ *//;s/ *$//;s/  */ /g;/^$/d;' \
     | awk '!seen[$0]++')
-    # remove empty/ commented lines; trim the leading spaces (1), the trailing
-    # spaces (2) and replace a group of spaces with a single space; remove
-    # duplicated lines preserved order
+    # 1/remove commented part from # charater to the end of line (1), replace a
+    # tab character by a space (2), trim line's leading spaces (3), trim line's
+    # trailing spaces (4), replace a group of spaces with a single space (5),
+    # remove empty lines (6);
+    # 2/remove duplicated lines preserved order;
 USERS=($USERS)                      # convert list to array of users
 
 while read -r line
