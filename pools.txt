@@ -8,4 +8,5 @@
 #
 #MyOwnPool  <MY_POOL_IP>            8082    <MY_POOL_PASS>
 devnoso     devnosoeu.nosocoin.com  8082    UnMaTcHeD
+vanthoi     noso.vanthoi.net        8082    Asia@2022
 leviable    pool.noso.dev           8082    password
