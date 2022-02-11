@@ -14,20 +14,16 @@ events_duration=60  # duration (sec) the events occur
 
 [ -f params.txt ] && params="$(cat params.txt)"
 params=$(echo "$params" \
-    | sed 's/#.*$//g' \
-    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
-    | grep -E -v '^$' \
+    | sed 's/#.*$//g;s/\t/ /g;s/^ *//;s/ *$//;s/  */ /g;/^$/d;' \
     | awk '!seen[$0]++')
-    # remove commented part of lines (from # charater to the end of line);
-    # trim leading spaces (1), trim trailing spaces (2), and replace a group of
-    # spaces with a single space (3);
-    # remove empty lines;
-    # remove duplicated lines preserved order;
-
-reNUM='^[0-9]+$'
+    # 1/remove commented part from # charater to the end of line (1), replace a
+    # tab character by a space (2), trim line's leading spaces (3), trim line's
+    # trailing spaces (4), replace a group of spaces with a single space (5),
+    # remove empty lines (6);
+    # 2/remove duplicated lines preserved order;
 
 aTIME_CYCLE=$(echo "$params" | grep -E '^TIME_CYCLE' | tail -1 | sed -n -e 's/^TIME_CYCLE *= *//p')
-if [[ "$aTIME_CYCLE" =~ $reNUM ]] ; then
+if [[ "$aTIME_CYCLE" =~ ^[0-9]+$ ]] ; then
    TIME_CYCLE=$aTIME_CYCLE
 fi
 

@@ -42,42 +42,39 @@ ngstuff_logfile=pooling.log
 
 [ -f pools.txt ] && POOLS=$(printf "%s\n%s" "$(cat pools.txt)" "$POOLS")
 POOLS=$(echo "$POOLS" \
-    | grep -E -v "^$|^#"    \
-    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
+    | sed 's/#.*$//g;s/\t/ /g;s/^ *//;s/ *$//;s/  */ /g;/^$/d;' \
     | awk '!seen[$0]++')
-    # remove empty/ commented lines; trim the leading spaces (1), the trailing
-    # spaces (2) and replace a group of spaces with a single space; remove
-    # duplicated lines preserved order
+    # 1/remove commented part from # charater to the end of line (1), replace a
+    # tab character by a space (2), trim line's leading spaces (3), trim line's
+    # trailing spaces (4), replace a group of spaces with a single space (5),
+    # remove empty lines (6);
+    # 2/remove duplicated lines preserved order;
 
 [ -f users.txt ] && USERS=$(printf "%s\n%s" "$(cat users.txt)" "$USERS")
 USERS=$(echo "$USERS" \
-    | grep -E -v "^$|^#"    \
-    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
+    | sed 's/#.*$//g;s/\t/ /g;s/^ *//;s/ *$//;s/  */ /g;/^$/d;' \
     | awk '!seen[$0]++')
-    # remove empty/ commented lines; trim the leading spaces (1), the trailing
-    # spaces (2) and replace a group of spaces with a single space; remove
-    # duplicated lines preserved order
+    # 1/remove commented part from # charater to the end of line (1), replace a
+    # tab character by a space (2), trim line's leading spaces (3), trim line's
+    # trailing spaces (4), replace a group of spaces with a single space (5),
+    # remove empty lines (6);
+    # 2/remove duplicated lines preserved order;
 
 [ -f params.txt ] && params="$(cat params.txt)"
 params=$(echo "$params" \
-    | sed 's/#.*$//g' \
-    | sed 's/^ *//;s/ *$//;s/  */ /g;' \
-    | grep -E -v '^$' \
+    | sed 's/#.*$//g;s/\t/ /g;s/^ *//;s/ *$//;s/  */ /g;/^$/d;' \
     | awk '!seen[$0]++')
-    # remove commented part of lines (from # charater to the end of line);
-    # trim leading spaces (1), trim trailing spaces (2), and replace a group of
-    # spaces with a single space (3);
-    # remove empty lines;
-    # remove duplicated lines preserved order;
-
-reNUM='^[0-9]+$'
-
+    # 1/remove commented part from # charater to the end of line (1), replace a
+    # tab character by a space (2), trim line's leading spaces (3), trim line's
+    # trailing spaces (4), replace a group of spaces with a single space (5),
+    # remove empty lines (6);
+    # 2/remove duplicated lines preserved order;
 aCPU=$(echo "$params" | grep -E '^CPU' | tail -1 | sed -n -e 's/^CPU *= *//p')
-if [[ "$aCPU" =~ $reNUM ]] ; then
+if [[ "$aCPU" =~ ^[0-9]+$ ]] ; then
    CPU=$aCPU
 fi
 aSWITCH_DURATION=$(echo "$params" | grep -E '^SWITCH_DURATION' | tail -1 | sed -n -e 's/^SWITCH_DURATION *= *//p')
-if [[ "$aSWITCH_DURATION" =~ $reNUM ]] ; then
+if [[ "$aSWITCH_DURATION" =~ ^[0-9]+$ ]] ; then
    SWITCH_DURATION=$aSWITCH_DURATION
 fi
 
@@ -339,7 +336,7 @@ while true; do
         | tee -a $ngstuff_logfile
     [ $mining_duration -gt 0 ] && printf "[%s]Mining will take place in %s minutes\n" \
         "$(date +'%Y/%m/%d %H:%M:%S')" \
-        $(expr $mining_duration / 60 ) \
+        $(printf "%.2f\n" $(echo "$mining_duration / 60" | bc -l)) \
         | tee -a $ngstuff_logfile
     [ -n "$timeout_pid" ] && trap - INT
     timeout $mining_duration \
