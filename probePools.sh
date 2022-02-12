@@ -63,7 +63,7 @@ do
         | timeout $probing_duration nc -w $probing_duration $host $port)"
     exit_code=$?
     if [ $exit_code -eq 0 ]; then
-        printf "\t: ONLINE"
+        printf "\t ONLINE"
         if [ -z "$resp_text" ]; then
             printf "\tno pool and miner information responded"
             printf "\t(%s:%s %s)\n" $host $port $pass
@@ -76,13 +76,20 @@ do
                 "${status[1]}" "$percentfee" "${status[3]}" "${status[4]}"
             found_count=0
             conne_count=0
+            hrate_total=0
+            balan_total=0
             for i in "${!USERS[@]}"; do
                 miner_stat=$( \
                     echo $resp_text \
                     | grep -o -E "${USERS[i]}:[0-9]*:(-?)[0-9]*:[0-9]*")
-                if [ ! -z "$miner_stat" ]; then
+                if [ -n "$miner_stat" ]; then
                     found_count="$(expr $found_count + 1)"
                     printf "\t%-55s" $miner_stat
+                    state=${miner_stat#"${USERS[i]}:"}      # remove user part
+                    balan=$(echo "$state" | grep -o -E '^([0-9]*)')
+                    hrate=$(echo "$state" | grep -o -E '([0-9]*)$')
+                    hrate_total=$(expr $hrate_total + $hrate)
+                    balan_total=$(expr $balan_total + $balan)
                     pool_text="$( \
                         echo "$pass ${USERS[0]} STATUS" \
                         | timeout $probing_duration nc -w $probing_duration $host $port)"
@@ -98,21 +105,23 @@ do
             done
             if [ ${#USERS[@]} -gt 0 ]; then
                 printf "\t%55s\t%d / %d / %d\n" \
-                    "SUMMARY (mining / found / total users):" \
+                    "SUMMARY: - mining/connected/ttl. users:" \
                     $conne_count $found_count ${#USERS[@]}
+                [ $hrate_total -gt 0 ] && printf "\t%55s\t%d\n" "- hashrate:" $hrate_total
+                [ $balan_total -gt 0 ] && printf "\t%55s\t%d\n" "- balance:" $balan_total
             fi
         else
             printf "\tno pool and miner information responded (${resp_text::})"
             printf "\t(%s:%s %s)\n" $host $port $pass
         fi
     elif [ "$exit_code" -eq 1 ]; then
-        printf "\t: OFFLINE"
+        printf "\t OFFLINE"
         printf "\t(%s:%s %s)\n" $host $port $pass
     elif [ "$exit_code" -eq 124 ]; then
-        printf "\t: TIMEOUT ($probing_duration secs)"
+        printf "\t TIMEOUT ($probing_duration secs)"
         printf "\t(%s:%s %s)\n" $host $port $pass
     else
-        printf "\t: N/A STATUS"
+        printf "\t N/A STATUS"
         printf "\t(%s:%s %s)\n" $host $port $pass
     fi
 done <<< "$POOLS"
