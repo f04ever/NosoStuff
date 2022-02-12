@@ -96,3 +96,6 @@ Currently it can catch these simple events:
 - Parameters: `pools.txt` and `users.txt` (optional but recommended)
 
 - Use command: `./probePools.sh`
+
+![Screenshot](images/probePools.png)
+
