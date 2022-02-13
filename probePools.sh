@@ -49,6 +49,11 @@ USERS=$(echo "$USERS" \
     # 2/remove duplicated lines preserved order;
 USERS=($USERS)                      # convert list to array of users
 
+all_found_count=0
+all_conne_count=0
+all_hrate_total=0
+all_balan_total=0
+
 while read -r line
 do
     line=($line)
@@ -95,21 +100,25 @@ do
                         | timeout $probing_duration nc -w $probing_duration $host $port)"
                     if [ "${pool_text:0:16}" = "ALREADYCONNECTED" ]; then
                         conne_count="$(expr $conne_count + 1)"
-                        printf " <- CONNECTED\n" $miner_stat
+                        printf " <-    CONNECTED\n"
                     else
                         printf "\n"
                     fi
                 else
-                    printf "\t%-55s -> NOT FOUND\n" ${USERS[i]}
+                    printf "\t%-55s ->    NOT FOUND\n" ${USERS[i]}
                 fi
             done
             if [ ${#USERS[@]} -gt 0 ]; then
-                printf "\t%55s\t%d / %d / %d\n" \
-                    "SUMMARY: - mining/connected/ttl. users:" \
-                    $conne_count $found_count ${#USERS[@]}
-                [ $hrate_total -gt 0 ] && printf "\t%55s\t%d\n" "- hashrate:" $hrate_total
-                [ $balan_total -gt 0 ] && printf "\t%55s\t%d\n" "- balance:" $balan_total
+                printf "%63s%16s\n" \
+                    "Sub-Total: - (mining/connected/total) num. of users:" \
+                    "$(printf '%d / %d / %d' $conne_count $found_count ${#USERS[@]})"
+                [ $hrate_total -gt 0 ] && printf "%63s%16s\n" "- hashrate:" $hrate_total
+                [ $balan_total -gt 0 ] && printf "%63s%16s\n" "- balance:" $balan_total
             fi
+            all_found_count=$(expr $all_found_count + $found_count)
+            all_conne_count=$(expr $all_conne_count + $conne_count)
+            all_hrate_total=$(expr $all_hrate_total + $hrate_total)
+            all_balan_total=$(expr $all_balan_total + $balan_total)
         else
             printf "\tno pool and miner information responded (${resp_text::})"
             printf "\t(%s:%s %s)\n" $host $port $pass
@@ -125,3 +134,11 @@ do
         printf "\t(%s:%s %s)\n" $host $port $pass
     fi
 done <<< "$POOLS"
+if [ ${#USERS[@]} -gt 0 ]; then
+    printf "%s\n" "-------------------------------------------------------------------------------"
+    printf "%63s%16s\n" \
+        "GRAND-TOTAL: - (MINING/CONNECTED/TOTAL) NUM. OF USERS:" \
+        "$(printf '%d / %d / %d' $all_conne_count $all_found_count ${#USERS[@]})"
+    [ $all_hrate_total -gt 0 ] && printf "%63s%16s\n" "- HASHRATE:" $all_hrate_total
+    [ $all_balan_total -gt 0 ] && printf "%63s%16s\n" "- BALANCE:" $all_balan_total
+fi
