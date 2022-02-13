@@ -20,11 +20,13 @@ And, here they are! `ngExec.sh`, `ngKill.sh`, `ngTmuxNew.sh`, `ngTmuxEnd.sh`, an
 ### Supported OSs/ Platforms:
 Linux, Android(Termux), and macOS. Currently not support Windows native someone has set it up well under WSL as same as on a native Linux.
 
-### Required packages: `tmux`, `nc` (`netcat`), `timeout`, `sed`, `grep`, `pgrep`, ...
+### Required packages: `tmux`, `nc` (`netcat`), `timeout`, `sed`, `grep`, `pgrep`, ... (must using `date` GNU version)
 
 *** In Linux: Most of these packages are common and installed by default in linux distros:
 
-    - `sudo apt install tmux`
+    - `sudo apt install tmux`       # ubuntu
+
+    - `apk add tmux coreutils`       # alpine linux
 
 *** In macOS: the `nc` Apple version is bugfull, use the GNU version instead:
 
