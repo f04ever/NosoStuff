@@ -36,7 +36,7 @@ POOLS=$(echo "$POOLS" \
     # trailing spaces (4), replace a group of spaces with a single space (5),
     # remove empty lines (6);
     # 2/remove duplicated lines preserved order;
-[ ${#POOLS[@]} -eq 0 ] && printf "no pool provided\n" && exit 0
+[ -z "$POOLS" ] && printf "no pool provided\n" && exit 0
 
 [ -f users.txt ] && USERS=$(printf "%s\n%s" "$(cat users.txt)" "$USERS")
 USERS=$(echo "$USERS" \
@@ -111,7 +111,7 @@ do
             if [ ${#USERS[@]} -gt 0 ]; then
                 printf "%79s\n" "(mining/connected/total)"
                 printf "%63s%16s\n" \
-                    "Sub-Total: - num. of users:" \
+                    "Pool $name Total: - num. of users:" \
                     "$(printf '%d/%d/%d' \
                         $conne_count $found_count ${#USERS[@]})"
                 printf "%63s%'16d\n" "- hashrate:" $hrate_total
@@ -136,12 +136,13 @@ do
         printf "\t(%s:%s %s)\n" $host $port $pass
     fi
 done <<< "$POOLS"
-if [ ${#POOLS[@]} -gt 1 ] && [ ${#USERS[@]} -gt 0 ]; then
+POOLS_COUNT=$(echo "$POOLS" | wc -l)
+if [ $POOLS_COUNT -ge 1 ] && [ ${#USERS[@]} -gt 0 ]; then
     printf "%s\n" "-------------------------------------------------------------------------------"
     printf "%79s\n" \
         "(MINING/CONNECTED/TOTAL)"
     printf "%63s%16s\n" \
-        "${#POOLS[@]} POOLS GRAND-TOTAL: - USERS #:" \
+        "${POOLS_COUNT}-POOLS TOTAL: - NUM. OF USERS:" \
         "$(printf '%d/%d/%d' \
             $all_conne_count $all_found_count ${#USERS[@]})"
     printf "%63s%'16d\n" "- HASHRATE:" $all_hrate_total
