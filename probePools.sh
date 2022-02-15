@@ -68,7 +68,7 @@ do
         | timeout $probing_duration nc -w $probing_duration $host $port)"
     exit_code=$?
     if [ $exit_code -eq 0 ]; then
-        printf "\t ONLINE"
+        # printf "\tONLINE"
         if [ -z "$resp_text" ]; then
             printf "\tno pool and miner information responded"
             printf "\t(%s:%s %s)\n" $host $port $pass
@@ -76,9 +76,9 @@ do
         fi
         if [ ${resp_text:0:6} == "STATUS" ]; then
             status=($resp_text)
-            percentfee=$(echo "scale=2; ${status[2]} / 100" | bc -l)
-            printf "\thrate: %s; fee: %s%%; share: %s%%; miner: %s\n" \
-                "${status[1]}" "$percentfee" "${status[3]}" "${status[4]}"
+            printf "\thrate: %'d fee: %'.2f%% share: %s%% diff.: %'d miners: %'d\n" \
+                "${status[1]}" "$(echo 'scale=2; '"${status[2]}"' / 100' | bc -l)" \
+                "${status[3]}" "${status[4]}" "${status[5]}"
             found_count=0
             conne_count=0
             hrate_total=0
@@ -109,11 +109,13 @@ do
                 fi
             done
             if [ ${#USERS[@]} -gt 0 ]; then
+                printf "%79s\n" "(mining/connected/total)"
                 printf "%63s%16s\n" \
-                    "Sub-Total: - (mining/connected/total) num. of users:" \
-                    "$(printf '%d / %d / %d' $conne_count $found_count ${#USERS[@]})"
-                [ $hrate_total -gt 0 ] && printf "%63s%16s\n" "- hashrate:" $hrate_total
-                [ $balan_total -gt 0 ] && printf "%63s%16s\n" "- balance:" $balan_total
+                    "Sub-Total: - num. of users:" \
+                    "$(printf '%d/%d/%d' \
+                        $conne_count $found_count ${#USERS[@]})"
+                printf "%63s%'16d\n" "- hashrate:" $hrate_total
+                printf "%63s%'16.08f\n" "- balance:" $(echo $balan_total' / 100000000' | bc -l)
             fi
             all_found_count=$(expr $all_found_count + $found_count)
             all_conne_count=$(expr $all_conne_count + $conne_count)
@@ -124,21 +126,24 @@ do
             printf "\t(%s:%s %s)\n" $host $port $pass
         fi
     elif [ "$exit_code" -eq 1 ]; then
-        printf "\t OFFLINE"
+        printf "\tOFFLINE"
         printf "\t(%s:%s %s)\n" $host $port $pass
     elif [ "$exit_code" -eq 124 ]; then
-        printf "\t TIMEOUT ($probing_duration secs)"
+        printf "\tTIMEOUT ($probing_duration secs)"
         printf "\t(%s:%s %s)\n" $host $port $pass
     else
-        printf "\t N/A STATUS"
+        printf "\tN/A STATUS"
         printf "\t(%s:%s %s)\n" $host $port $pass
     fi
 done <<< "$POOLS"
-if [ ${#USERS[@]} -gt 0 ]; then
+if [ ${#POOLS[@]} -gt 1 ] && [ ${#USERS[@]} -gt 0 ]; then
     printf "%s\n" "-------------------------------------------------------------------------------"
+    printf "%79s\n" \
+        "(MINING/CONNECTED/TOTAL)"
     printf "%63s%16s\n" \
-        "GRAND-TOTAL: - (MINING/CONNECTED/TOTAL) NUM. OF USERS:" \
-        "$(printf '%d / %d / %d' $all_conne_count $all_found_count ${#USERS[@]})"
-    [ $all_hrate_total -gt 0 ] && printf "%63s%16s\n" "- HASHRATE:" $all_hrate_total
-    [ $all_balan_total -gt 0 ] && printf "%63s%16s\n" "- BALANCE:" $all_balan_total
+        "${#POOLS[@]} POOLS GRAND-TOTAL: - USERS #:" \
+        "$(printf '%d/%d/%d' \
+            $all_conne_count $all_found_count ${#USERS[@]})"
+    printf "%63s%'16d\n" "- HASHRATE:" $all_hrate_total
+    printf "%63s%'16.08f\n" "- BALANCE:" $(echo $all_balan_total' / 100000000' | bc -l)
 fi
