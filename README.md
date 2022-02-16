@@ -1,9 +1,17 @@
 # NosoStuff
-Some handy scripts facilitate [Noso Cryptocurrency](https://nosocoin.com) mining, masternode running, checking pools information ...
 
-## FOR MINING USING `noso-go`
+Some handy bash shell scripts facilitate [Noso Cryptocurrency](https://nosocoin.com) mining, checking pools, checking nodes ...
+
+- [MINING USING `noso-go`](##mining-using-noso-go)
+- [CHECKING POOLS](##checking-pools)
+- [CHECKING NODES](##checking-nodes)
+
+---
+
+## MINING USING `noso-go`
 
 ### Why I (and you?) need these scripts
+
 Crypto mining is always unstable by many reasons, like the network communication, the softwares themself, ...
 That is unavoidable in case of  [Noso Cryptocurrency](https://nosocoin.com), mining on pools ([NosoWallet](https://github.com/Noso-Project/NosoWallet) up to version `v0.2.1Lb1`) using the admirable miner [noso-go](https://github.com/Noso-Project/noso-go) (up to version `v1.6.2`).
 `Watchdog triggered`, `POOLFULL`, `BANNED`, `ALREADYCONNECTED`, `PING 0`, or pool offline (`i/o timeout`) ...
@@ -18,6 +26,7 @@ And, here they are! `ngExec.sh`, `ngKill.sh`, `ngTmuxNew.sh`, `ngTmuxEnd.sh`, an
 ![Screenshot](images/ngTools.png)
 
 ### Supported OSs/ Platforms:
+
 Linux, Android(Termux), and macOS. Currently not support Windows native someone has set it up well under WSL as same as on a native Linux.
 
 ### Required packages: `tmux`, `nc` (`netcat`), `timeout`, `sed`, `grep`, `pgrep`, ... (must using `date` GNU version)
@@ -37,6 +46,7 @@ Linux, Android(Termux), and macOS. Currently not support Windows native someone 
     - `pkg install termux netcat-openbsd`
 
 ### Quick runing
+
 - Put all relating files in the same folder (ex.: `NosoStuff`) with the `noso-go`
 - Set parameters (descripted below)
 - Open terminal, go to folder `NosoStuff`
@@ -56,6 +66,7 @@ Linux, Android(Termux), and macOS. Currently not support Windows native someone 
     `tmux a -tnosomine`
 
 ### Set parameters:
+
 - `POOLS`: List of pools can be used (in file `pools.txt` or `ngExec.sh`)
 - `USERS`: List of users (wallet addresses/ aliases) can be used (in file `users.txt` or `ngExec.sh`)
 - `CPU`: The number of CPUs the noso-go uses for mining (in file `params.txt` or `ngExec.sh`)
@@ -63,6 +74,7 @@ Linux, Android(Termux), and macOS. Currently not support Windows native someone 
 - `TIME_CYCLE`: Duration in seconds periodically (default 5 secs) the noso-go log file be scanned to detect the dead events (in file `params.txt` or `ngExec.sh`)
 
 *** Recommend to set the parameters up using corresponding text files with the same formations as follow:
+
 - Set pool list `POOLS` using file `pools.txt`;
 - Set user list `USERS` using file `users.txt`;
 - Set other parameters using file `params.txt`;
@@ -80,7 +92,9 @@ Linux, Android(Termux), and macOS. Currently not support Windows native someone 
 - The `ngTmuxRestart.sh` is just a simplifying of turning of the current mining and then launching it again.
 
 ### Supported events
+
 Currently it can catch these simple events:
+
 - `Watchdog triggered` --> restart miner;
 - `POOLFULL` --> try another pool;
 - `BANNED` --> try another pool;
@@ -89,15 +103,28 @@ Currently it can catch these simple events:
 - Pool offline (`i/o timeout` for more than a minute) --> try another pool;
 
 
-## FOR CHECKING POOLS INFORMATION
+## CHECKING POOLS
 
-- Check pools online or not, show pool information including: hashrate, number of miners, fee, share, ... If associating with users (users.txt), show status of user in pool, including: joining or not, balance, user hash rate, block till payment out.
+Quickly check pools online or not, show pool information including: hashrate, number of miners, fee, share, ... If associating with users (users.txt), show status of user in pool, including: joining or not, balance, user hash rate, block till payment out.
 
 - Setup: `chmod +x problePools.sh`
 
-- Parameters: `pools.txt` and `users.txt` (optional but recommended)
+- Parameters: `pools.txt` list pools and `users.txt` (optional but recommended)
 
 - Use command: `./probePools.sh`
 
-![Screenshot](images/probePools.png)
+![probePools.sh's Screenshot](images/probePools.png)
+
+
+## CHECKING NODES
+
+Quickly check your pools status. It shows number of PEERS, current BLOCKS, PENDINGS blocks, DELTAS HEADERS VERSION UTC-TIME MNs-HASH MNs-COUNT
+
+- Setup: `chmod +x probleNodes.sh`
+
+- Parameters: `nodes.txt` list yours nodes.
+
+- Use command: `./probeNodes.sh`
+
+![probeNodes.sh's Screenshot](images/probeNodes.png)
 

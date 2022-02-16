@@ -1,0 +1,17 @@
+# List of nodes. This list can be combined with nodes.txt
+# LINE FORMATION: HOSTNAME HOST/IP PORT
+#
+# Local-00  127.0.0.1       8080
+#
+# These next 7 nodes are from devteam, can be removed or commented
+DevNode1    45.146.252.103  8080
+DevNode2    194.156.88.117  8080
+DevNode3    192.210.226.118 8080
+DevNode4    107.172.5.8     8080
+DevNode5    109.230.238.240 8080
+DevNode6    23.94.21.83     8080
+DevNode7    172.245.52.208  8080
+#
+# The following are your nodes
+#
+
