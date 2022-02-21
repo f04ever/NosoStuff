@@ -260,7 +260,20 @@ function select_pool_user() {
 
 [ -f "$ngstuff_logfile" ] && mv $ngstuff_logfile ${ngstuff_logfile}-last
 
-printf "[%s]==================================MINING POOLS==================================\n" \
+printf "[%s]================================================================================\n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]Try to restart the 'noso-go' miner based on recent dead events which be scanned \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]from log file. In the combination with the 'ngKill.sh' to maintain the mining   \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]progress more efficient by switching to other wallet addresses, or fallback to  \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]other mining pools, but able keep more resource on the preferred address or pool\n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- 'BANNED'              --> Fallback other pools                                \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- 'POOLFULL'            --> Fallback other pools                                \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- 'POOLCLOSING'         --> Fallback other pools                                \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- 'ALREADYCONNECTED'    --> Switch other address                                \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- 'PING 0'              --> Restart the miner                                   \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- 'Watchdog Triggered'  --> Restart the miner                                   \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- 'i/o timeout'         --> Fallback other pools                                \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- 'Error in connection' --> Fallback other pools                                \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]----------------------------------MINING POOLS----------------------------------\n" \
     "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 count=0
 while read -r line; do
@@ -395,7 +408,13 @@ while true; do
     detect_event_occurrence "$last_log_lines" "POOLFULL" "( <- POOLFULL)$" "$last_detecting_time" 1
     [ "$?" -eq 1 ] && switch_pool=1
 
+    detect_event_occurrence "$last_log_lines" "CLOSINGPOOL" "( <- CLOSINGPOOL)$" "$last_detecting_time" 1
+    [ "$?" -eq 1 ] && switch_pool=1
+
     detect_event_occurrence "$last_log_lines" "i/o timeout" "( Error (.*) i/o timeout)$" "$last_detecting_time" 10
+    [ "$?" -eq 1 ] && switch_pool=1
+
+    detect_event_occurrence "$last1_log_lines" "Error in connection:  <nil>" "( Error in connection:  <nil>)$" "$last_detecting_time" 10
     [ "$?" -eq 1 ] && switch_pool=1
 
     if [ $switch_pool -eq 1 ]; then

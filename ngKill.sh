@@ -115,10 +115,12 @@ printf "[%s]That sick noso-go process be killed. In the combination with 'ngExec
 printf "[%s]noso-go process will be invoked appropriately. Detecting dead events includes:  \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]- 'BANNED'                                                                      \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]- 'POOLFULL'                                                                    \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- 'POOLCLOSING'                                                                 \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]- 'ALREADYCONNECTED'                                                            \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]- 'PING 0'                                                                      \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]- 'Watchdog Triggered'                                                          \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]- 'i/o timeout'                                                                 \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
+printf "[%s]- 'Error in connection'                                                         \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]-----------------------------------PARAMETERS-----------------------------------\n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]                                                                                \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
 printf "[%s]- TIME_CYCLE=$TIME_CYCLE (seconds)                                              \n" "$(date +'%Y/%m/%d %H:%M:%S')" | tee -a $ngstuff_logfile
@@ -178,23 +180,33 @@ while true; do
         }
     ')
 
+    must_kill=0
+
     detect_event_occurrence "$last_log_lines" "BANNED" "( <- BANNED)$" "$last_detecting_time" 1
-    [ "$?" -eq 1 ] && kill_miner
+    [ "$?" -eq 1 ] && must_kill=1
 
     detect_event_occurrence "$last_log_lines" "POOLFULL" "( <- POOLFULL)$" "$last_detecting_time" 1
-    [ "$?" -eq 1 ] && kill_miner
+    [ "$?" -eq 1 ] && must_kill=1
 
+    detect_event_occurrence "$last_log_lines" "CLOSINGPOOL" "( <- CLOSINGPOOL)$" "$last_detecting_time" 1
+    [ "$?" -eq 1 ] && must_kill=1
+ 
     detect_event_occurrence "$last_log_lines" "ALREADYCONNECTED" "( <- ALREADYCONNECTED)$" "$last_detecting_time" 3
-    [ "$?" -eq 1 ] && kill_miner
+    [ "$?" -eq 1 ] && must_kill=1
 
     detect_event_occurrence "$last_log_lines" "Watchdog Triggered" "( ###################Watchdog Triggered)" "$last_detecting_time" 1
-    [ "$?" -eq 1 ] && kill_miner
+    [ "$?" -eq 1 ] && must_kill=1
 
     detect_event_occurrence "$last_log_lines" "PING 0" "( -> PING 0)$" "$last_detecting_time" 5
-    [ "$?" -eq 1 ] && kill_miner
+    [ "$?" -eq 1 ] && must_kill=1
 
     detect_event_occurrence "$last_log_lines" "i/o timeout" "( Error (.*) i/o timeout)$" "$last_detecting_time" 10
-    [ "$?" -eq 1 ] && kill_miner
+    [ "$?" -eq 1 ] && must_kill=1
+
+    detect_event_occurrence "$last_log_lines" "Error in connection:  <nil>" "( Error in connection:  <nil>)$" "$last_detecting_time" 10
+    [ "$?" -eq 1 ] && must_kill=1
+
+    [ $must_kill -eq 1 ] && kill_miner
 
     last_detecting_time="$latest_log_time"
     sleep $TIME_CYCLE
