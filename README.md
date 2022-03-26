@@ -2,13 +2,14 @@
 
 Some handy bash shell scripts facilitate [Noso Cryptocurrency](https://nosocoin.com) mining, checking pools, checking nodes ...
 
-- [MINING USING `noso-go`](##mining-using-noso-go)
-- [CHECKING POOLS](##checking-pools)
+- [MINING USING `noso-go`](##mining-using-noso-go) <--- Deprecated by Protocol 2 since Feb. 23 2022. Use [noso-2m](https://github.com/f04ever/noso-2m) or [consominer](https://github.com/Noso-Project/consominer) instead
+- [CHECKING POOLS](##checking-pools) <--- Deprecated by Protocol 2 since Feb. 23 2022.
 - [CHECKING NODES](##checking-nodes)
 
 ---
 
-## MINING USING `noso-go`
+## MINING USING `noso-go` <--- Deprecated by Protocol 2 since Feb. 23 2022. Use [noso-2m](https://github.com/f04ever/noso-2m) or [consominer](https://github.com/Noso-Project/consominer) instead
+
 
 ### Why I (and you?) need these scripts
 
@@ -103,7 +104,7 @@ Currently it can catch these simple events:
 - Pool offline (`i/o timeout` for more than a minute) --> try another pool;
 
 
-## CHECKING POOLS
+## CHECKING POOLS <--- Deprecated by Protocol 2 since Feb. 23 2022.
 
 Quickly check pools online or not, show pool information including: hashrate, number of miners, fee, share, ... If associating with users (users.txt), show status of user in pool, including: joining or not, balance, user hash rate, block till payment out.
 
